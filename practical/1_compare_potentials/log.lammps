@@ -1,9 +1,0 @@
-LAMMPS (16 Mar 2018)
-variable	ptype index eam
-variable	morse_rcut index 4.95
-if "${ptype} == eam" then "jump SELF EAM"
-if "${ptype} == morse" then "jump SELF MORSE" else "jump SELF UNKNOWN"
-jump SELF MORSE
-variable	pinclude string potentials/MORSE.potential
-log		log.morse.${morse_rcut}
-log		log.morse.6.95
