@@ -22,7 +22,7 @@ lattice		fcc 3.2 origin 0.5 0.5 0.5
 region		box block 0 10 0 10 0 10
 create_box	1 box
 create_atoms	1 box
-mass		1 63.550
+mass		1 63.546
 
 include		${pinclude}
 neighbor	1.0 bin
