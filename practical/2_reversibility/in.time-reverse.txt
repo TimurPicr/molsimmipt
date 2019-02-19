@@ -1,0 +1,54 @@
+variable	ts0 equal 0.005
+variable	ts1 equal ${ts0}/1
+
+variable	nsteps0 equal 1200
+variable	nsteps1 equal "v_nsteps0 * v_ts0 / v_ts1"
+
+units		lj
+atom_style	atomic
+
+lattice		fcc 0.6 origin 0.25 0.25 0.25
+region		box block 0 5 0 5 0 5
+create_box	1 box
+create_atoms	1 box
+mass		1 1.0
+
+pair_style	lj/smooth 2.5 3.0
+pair_coeff	1 1 1.0 1.0
+
+timestep        ${ts0}
+neighbor	0.3 bin
+neigh_modify	delay 0 every 1 check yes
+
+velocity	all create 3.0 87287 loop geom
+
+thermo		100
+dump		1 all custom 200 tmp.*.dump id type x y z
+
+dump_modify	1 sort id
+
+# dissolve the lattice
+
+fix		init_state all store/state 0 x y z vx vy vz
+
+fix		1 all nve
+
+run		${nsteps0}
+
+# reverse the velocities and continue run
+
+variable        vxflip atom -vx
+variable        vyflip atom -vy
+variable        vzflip atom -vz
+velocity	all set v_vxflip v_vyflip v_vzflip
+
+timestep        ${ts1}
+
+variable	r_error_sq atom "(x - f_init_state[1]) * (x - f_init_state[1]) + (y - f_init_state[2]) * (y - f_init_state[2]) + (z - f_init_state[3]) * (z - f_init_state[3])"
+variable	v_error_sq atom "(vx + f_init_state[4]) * (vx + f_init_state[4]) + (vy + f_init_state[5]) * (vy + f_init_state[5]) + (vz + f_init_state[6]) * (vz + f_init_state[6])"
+
+fix		1 all nve
+
+compute         boxchunk all chunk/atom bin/1d x lower 1.0 units reduced
+fix		mean_sq_vel_error all ave/chunk ${nsteps0} 1 ${nsteps0} boxchunk v_r_error_sq v_v_error_sq file d.txt
+run		${nsteps1}
