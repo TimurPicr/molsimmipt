@@ -1,6 +1,6 @@
 # 3d Lennard-Jones melt
 
-variable	length equal 5000
+variable	length index 5000
 variable	tstep equal 20/${length}
 
 units		lj
@@ -39,10 +39,17 @@ unfix		2
 unfix		3
 
 fix		1 all nve
-run		1000
+run		5000
 
 timestep	${tstep}
 
-log		log.molecule.${length}.txt
+reset_timestep	0
+variable	e0 equal etotal
+run		0
+variable	ediff equal etotal-${e0}
+
+thermo_style	custom step time temp ke pe v_ediff press
+
+log		log.molecule.verlet.${length}.txt
 
 run		${length}

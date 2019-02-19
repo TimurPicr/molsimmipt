@@ -1,6 +1,6 @@
 # 3d Lennard-Jones melt
 
-variable	length index 0 2000 4000 5000 10000 20000 40000
+variable	length index 2000 4000 5000 10000 20000 40000
 
 units		lj
 atom_style	atomic
@@ -21,10 +21,10 @@ neigh_modify	every 20 delay 0 check no
 
 fix		1 all nve
 
-thermo_style custom step time temp ke pe etotal press lx
+thermo_style	custom step time temp ke pe etotal press lx
 
 thermo		50
-run		1000
+run		10000
 
 write_restart	melt.restart
 
@@ -33,8 +33,6 @@ label	loop_start
 clear
 
 read_restart melt.restart
-
-next length
 
 log		log.melt.${length}.txt
 
@@ -48,7 +46,12 @@ neigh_modify	every 20 delay 0 check no
 
 fix		1 all nve
 
-thermo_style custom step time temp ke pe etotal press lx
+reset_timestep	0
+variable	e0 equal etotal
+run		0
+variable	ediff equal etotal-${e0}
+
+thermo_style	custom step time temp ke pe v_ediff press
 
 thermo		50
 
@@ -56,6 +59,6 @@ timestep	${tstep}
 
 run		${length}
 
+next length
+
 if "${length} < 50000" then "jump SELF loop_start"
-
-
