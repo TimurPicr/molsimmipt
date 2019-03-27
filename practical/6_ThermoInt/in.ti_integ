@@ -79,7 +79,7 @@ print           "df/dl: ${dfdl}" append ti_integ.txt
 print           "Energy difference: ${du_ave}" append ti_integ.txt
 variable        int_trap equal ${int_trap}+${lambda_step}*${dfdl}*${du_ave}
 variable        step_rem equal ${step_number}%2
-if "${step_rem} == 0" then "variable int_simpson equal ${int_simpson}+${lambda_step}*${dfdl}*${du_ave}*4.0/3.0" else "variable int_simpson equal ${int_simpson}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0"
+if "${step_rem} == 0" then "variable int_simps equal ${int_simps}+${lambda_step}*${dfdl}*${du_ave}*4.0/3.0" else "variable int_simps equal ${int_simps}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0"
 
 
 uncompute         pe_gauss
@@ -90,4 +90,4 @@ next              step_number
 if ${step_number}<${nsteps_lambda} "jump SELF loop"
 
 print         "dF with trapezoid rule: ${int_trap}" append ti_integ.txt
-print         "dF with Simpson's rule: ${int_trap}" append ti_integ.txt
+print         "dF with Simpson's rule: ${int_simps}" append ti_integ.txt
