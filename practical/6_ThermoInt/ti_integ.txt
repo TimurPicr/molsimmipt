@@ -1,0 +1,4 @@
+Lambda: 0.05
+f(l): 0.00725
+df/dl: 0.285
+Energy difference: 24.038035018838

@@ -87,7 +87,7 @@ uncompute         pe_lj
 unfix             du_ave
 
 next              step_number
-if ${step_number}<${nsteps_lambda} "jump SELF loop"
+if ${step_number}<${nsteps_lambda} then "jump SELF loop"
 
 print         "dF with trapezoid rule: ${int_trap}" append ti_integ.txt
 print         "dF with Simpson's rule: ${int_simps}" append ti_integ.txt
