@@ -1,0 +1,86 @@
+# 3d Lennard-Jones melt
+variable        d index 0.89
+variable        sample_interval index 50
+variable        sample_count index 200
+variable        nsteps_lambda index 20
+variable        length_each_lambda equal ${sample_interval}*${sample_count}
+variable        step_number loop ${nsteps_lambda}
+variable        lambda_step equal 1.0/${nsteps_lambda}
+variable        int_trap equal 0
+variable        int_simps equal 0
+
+units		lj
+atom_style	atomic
+
+lattice		sc $d origin 0.5 0.5 0.5
+region		box block 0 10 0 10 0 10
+create_box	2 box
+create_atoms	2 box
+lattice		sc $d origin 0.50001 0.50001 0.50001
+create_atoms    1 box
+mass		1 1.0
+mass            2 1.0
+
+group           work type 1
+
+velocity	work create 1.0 87287 mom yes
+
+pair_style	hybrid lj/cut 5.0 gauss/cut 1.0
+pair_coeff      1 1 lj/cut 0 0 5.0
+pair_coeff      2 2 gauss/cut 0 0 0.01 1.0
+pair_coeff      1 2 gauss/cut -15.0 0.0 0.1 1.0
+
+neighbor	0.3 bin
+neigh_modify	every 10 delay 0 check yes exclude type 2 2
+
+compute         lj_temp work temp
+fix		1 work langevin 0.779 0.779 1.0 78278 zero yes
+fix             2 work nve
+
+timestep	0.002
+
+thermo_style    custom step time c_lj_temp ke pe etotal press vol enthalpy
+
+thermo		50
+run		10000
+
+label           loop
+
+unfix           1
+
+variable        lambda equal ${step_number}*${lambda_step}
+variable        fl equal ${lambda}*${lambda}*(3-2*${lambda})
+variable        dfdl equal 6*${lambda}*(1-${lambda})
+variable        eps equal ${fl}
+variable        gauss_e equal -15.0*(1-${fl})
+
+pair_coeff      1 1 lj/cut ${eps} 1.0 5.0
+pair_coeff      1 2 gauss/cut ${gauss_e} 0.0 0.2 1.0
+
+fix		1 work langevin 0.779 0.779 0.1 78278 zero yes
+
+compute         pe_gauss all pair gauss/cut
+compute         pe_lj all pair lj/cut
+
+thermo_style    custom step time c_lj_temp ke pe etotal press vol c_pe_gauss c_pe_lj
+
+run             5000
+
+reset_timestep  0
+
+variable        lj_m_gauss equal c_pe_lj/${fl}-c_pe_gauss/(1-${fl})
+fix             du_ave all ave/time ${sample_interval} ${sample_count} ${length_each_lambda} v_lj_m_gauss
+run             ${length_each_lambda}
+
+variable        du_ave equal f_du_ave/atoms*2
+print           "Lambda: ${lambda}" append ti_integ.txt
+print           "f(l): ${fl}" append ti_integ.txt
+print           "df/dl: ${dfdl}" append ti_integ.txt
+print           "Energy difference: ${du_ave}" append ti_integ.txt
+
+uncompute         pe_gauss
+uncompute         pe_lj
+unfix             du_ave
+
+next              step_number
+if ${step_number}<${nsteps_lambda} "jump SELF loop" else "break"
