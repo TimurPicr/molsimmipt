@@ -3,6 +3,10 @@ variable        d index 0.89
 variable        sample_interval index 50
 variable        sample_count index 200
 variable        nsteps_lambda index 20
+variable        gauss_prefactor index -15
+variable        gauss_sigma index 0.1
+
+variable        H_g equal ${gauss_prefactor}*${gauss_sigma}*sqrt(2*PI)
 variable        length_each_lambda equal ${sample_interval}*${sample_count}
 variable        step_number loop ${nsteps_lambda}
 variable        lambda_step equal 1.0/${nsteps_lambda}
@@ -28,13 +32,13 @@ velocity	work create 1.0 87287 mom yes
 pair_style	hybrid lj/cut 5.0 gauss/cut 1.0
 pair_coeff      1 1 lj/cut 0 0 5.0
 pair_coeff      2 2 gauss/cut 0 0 0.01 1.0
-pair_coeff      1 2 gauss/cut -15.0 0.0 0.1 1.0
+pair_coeff      1 2 gauss/cut ${H_g} 0.0 ${gauss_sigma} 1.0
 
 neighbor	0.3 bin
 neigh_modify	every 10 delay 0 check yes exclude type 2 2
 
 compute         lj_temp work temp
-fix		1 work langevin 0.779 0.779 1.0 78278 zero yes
+fix		1 work langevin 0.779 0.779 0.5 78278 zero yes
 fix             2 work nve
 
 timestep	0.002
@@ -52,12 +56,12 @@ variable        lambda equal ${step_number}*${lambda_step}
 variable        fl equal ${lambda}*${lambda}*(3-2*${lambda})
 variable        dfdl equal 6*${lambda}*(1-${lambda})
 variable        eps equal ${fl}
-variable        gauss_e equal -15.0*(1-${fl})
+variable        gauss_e equal -3.75*(1-${fl})
 
 pair_coeff      1 1 lj/cut ${eps} 1.0 5.0
-pair_coeff      1 2 gauss/cut ${gauss_e} 0.0 0.2 1.0
+pair_coeff      1 2 gauss/cut ${gauss_e} 0.0 0.1 1.0
 
-fix		1 work langevin 0.779 0.779 0.1 78278 zero yes
+fix		1 work langevin 0.779 0.779 0.5 78278 zero yes
 
 compute         pe_gauss all pair gauss/cut
 compute         pe_lj all pair lj/cut
@@ -78,8 +82,7 @@ print           "f(l): ${fl}" append ti_integ.txt
 print           "df/dl: ${dfdl}" append ti_integ.txt
 print           "Energy difference: ${du_ave}" append ti_integ.txt
 variable        int_trap equal ${int_trap}+${lambda_step}*${dfdl}*${du_ave}
-variable        step_rem equal ${step_number}%2
-variable int_simps equal ${int_simps}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0*(1+${step_rem})
+variable        int_simps equal ${int_simps}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0*(1+${step_number}%2)
 
 
 uncompute         pe_gauss
@@ -90,4 +93,4 @@ next              step_number
 if ${step_number}<${nsteps_lambda} then "jump SELF loop"
 
 print         "dF with trapezoid rule: ${int_trap}" append ti_integ.txt
-print         "dF with Simpson's rule: ${int_simps}" append ti_integ.txt
+print         "dF with parabolic rule: ${int_simps}" append ti_integ.txt
