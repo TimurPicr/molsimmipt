@@ -6,3 +6,4 @@ log.*
 *.dump
 *.restart
 *.log
+*.data
