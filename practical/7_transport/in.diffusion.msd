@@ -31,6 +31,6 @@ thermo          50
 fix             print_msd all print 50 "${dtime} ${msd_xyz} ${diffus}" file msd.T${temp}.rho${rho}.txt screen no
 run		3000
 
-print           "Diffusivity estimate (MSD): ${diffus}" append msd.T${temp}.rho${rho}.txt
-
 write_data      liquid.T${temp}.rho${rho}.data
+
+print           "Diffusivity estimate (MSD): ${diffus}" append msd.T${temp}.rho${rho}.txt

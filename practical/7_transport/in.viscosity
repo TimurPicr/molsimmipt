@@ -41,5 +41,7 @@ variable        vyz equal trap(f_SACF[5])*${gkscale}
 
 run		${run_steps}
 
+write_data      liquid.T${temp}.rho${rho}.data
+
 variable        eta equal (${vxy}+${vxz}+${vyz})/3
 print           "Viscosity estimate (GK): ${eta}"
