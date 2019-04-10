@@ -1,6 +1,6 @@
 variable        coul_rcut index 15.0
 
-log             log.NaCl.coul_cut.rcut.${rcut}
+log             log.NaCl.coul_cut.rcut.${coul_rcut}
 units		real
 atom_style	charge
 
