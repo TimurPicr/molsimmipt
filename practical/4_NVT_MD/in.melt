@@ -29,13 +29,15 @@ thermo		500
 thermo_style	custom step temp etotal press
 run		2500
 
-unfix	1
-fix		1 all nvt temp 1.0 1.0 0.2
+fix		isokin all temp/rescale 20 1.0 1.0 0.02 1.0
 
-run		20000
+run		50000
 
 compute	p_all all pressure thermo_temp virial
 
+unfix		isokin
+
+thermo_style	custom step temp etotal press c_p_all
 #=====Berendsen MD run====#
 reset_timestep	0
 
@@ -103,7 +105,7 @@ log		log.mcnvt.txt
 variable        mcmoves equal f_montecarlo[1]
 variable        mcaccratio equal f_montecarlo[2]/(f_montecarlo[1]+1e-10)
 
-thermo_style	custom step temp etotal press v_mcmoves v_mcaccratio
+thermo_style	custom step temp etotal press c_p_all v_mcmoves v_mcaccratio
 
 thermo	200
 
