@@ -6,11 +6,11 @@ variable	tstep equal 20/${length}
 units		lj
 atom_style	bond
 
-molecule	dimer molecule.dimer
-
 lattice		sc 0.4221
 region		box block 0 10 0 10 0 10
 create_box	1 box bond/types 1 extra/bond/per/atom 1 extra/special/per/atom 1
+molecule	dimer molecule.dimer
+
 create_atoms	0 box mol dimer 234567
 mass		1 1.0
 
@@ -20,7 +20,7 @@ pair_style	lj/smooth 2.5 3.0
 pair_coeff	1 1 1.0 1.0
 
 bond_style	harmonic
-bond_coeff      1 5000.0 1.0
+bond_coeff      1 25000.0 1.0
 
 neighbor	0.3 bin
 neigh_modify	every 20 delay 0 check no
