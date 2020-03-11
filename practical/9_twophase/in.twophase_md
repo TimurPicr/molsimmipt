@@ -1,6 +1,6 @@
 # methane simulation
 
-log             twophase.log.txt
+log             log.twophase.txt
 
 units		real
 atom_style	atomic

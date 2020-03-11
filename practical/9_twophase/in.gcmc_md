@@ -24,7 +24,7 @@ pair_coeff	1 1 0.29410 3.73
 neighbor	0.3 bin
 neigh_modify	every 20 delay 0 check no
 
-fix		1 all nve/limit 1.0
+fix		1 all nve/limit 0.3
 fix		2 all temp/berendsen 150.0 150.0 20.0
 fix		3 all momentum 1 linear 1 1 1 angular
 
@@ -47,9 +47,9 @@ compute_modify  mdpress dynamic/dof yes
 fix             1 all nvt temp 150.0 150.0 100.0
 fix_modify      1 temp mdtemp
 
-variable        fug equal ${f0}-5
+variable        fug equal ${f0}
 
-variable        max_fug equal ${f0}
+variable        max_fug equal ${f0}+5
 
 thermo_style    custom step c_mdtemp ke pe etotal c_mdpress density
 
