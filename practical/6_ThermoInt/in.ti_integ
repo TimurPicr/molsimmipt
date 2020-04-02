@@ -3,7 +3,7 @@ variable        d index 0.94
 variable        sample_interval index 50
 variable        sample_count index 10
 variable        nsteps_lambda index 64
-variable        gauss_prefactor index -15
+variable        gauss_prefactor index -20
 variable        gauss_sigma index 0.1
 
 variable        H_g equal ${gauss_prefactor}*${gauss_sigma}*sqrt(2*PI)
