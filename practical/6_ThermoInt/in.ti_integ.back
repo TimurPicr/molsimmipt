@@ -1,0 +1,42 @@
+variable        step_num_back loop ${nsteps_lambda}
+label           loop_back
+
+unfix           1
+
+variable        lambda equal 1.0-${step_num_back}*${lambda_step}
+variable        fl equal ${lambda}*${lambda}*(3-2*${lambda})
+variable        dfdl equal 6*${lambda}*(1-${lambda})
+variable        eps equal ${fl}
+variable        gauss_e equal ${H_g}*(1-${fl})
+
+pair_coeff      1 1 lj/cut ${eps} 1.0 5.0
+pair_coeff      1 2 gauss/cut ${gauss_e} 0.0 ${gauss_sigma} 1.0
+
+fix		1 work langevin 0.779 0.779 0.5 78278 zero yes
+
+compute         pe_gauss all pair gauss/cut
+compute         pe_lj all pair lj/cut
+
+thermo_style    custom step time c_lj_temp ke pe etotal press vol c_pe_gauss c_pe_lj
+
+reset_timestep  0
+
+variable        lj_m_gauss equal c_pe_lj/${fl}-c_pe_gauss/(1-${fl})
+fix             du_ave all ave/time ${sample_interval} ${sample_count} ${length_each_lambda} v_lj_m_gauss
+run             ${length_each_lambda}
+
+variable        du_ave equal f_du_ave/atoms*2
+print           "Lambda: ${lambda}" append ti_integ.log
+print           "f(l): ${fl}" append ti_integ.log
+print           "df/dl: ${dfdl}" append ti_integ.log
+print           "Energy difference: ${du_ave}" append ti_integ.log
+variable        int_trap_back equal ${int_trap_back}+${lambda_step}*${dfdl}*${du_ave}
+variable        int_simps_back equal ${int_simps_back}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0*(1+${step_number}%2)
+
+
+uncompute         pe_gauss
+uncompute         pe_lj
+unfix             du_ave
+
+next              step_num_back
+if ${step_num_back}<${nsteps_lambda} then "jump SELF loop_back"

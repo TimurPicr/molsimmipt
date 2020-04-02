@@ -1,8 +1,8 @@
 # 3d Lennard-Jones melt
-variable        d index 0.89
+variable        d index 0.94
 variable        sample_interval index 50
-variable        sample_count index 200
-variable        nsteps_lambda index 20
+variable        sample_count index 10
+variable        nsteps_lambda index 64
 variable        gauss_prefactor index -15
 variable        gauss_sigma index 0.1
 
@@ -13,14 +13,16 @@ variable        lambda_step equal 1.0/${nsteps_lambda}
 variable        int_trap equal 0
 variable        int_simps equal 0
 
+shell           rm ti_integ.log
+
 units		lj
 atom_style	atomic
 
-lattice		sc $d origin 0.5 0.5 0.5
-region		box block 0 10 0 10 0 10
+lattice		fcc $d
+region		box block 0 7 0 7 0 7
 create_box	2 box
 create_atoms	2 box
-lattice		sc $d origin 0.50001 0.50001 0.50001
+lattice		fcc $d origin 0.00001 0.00001 0.00001
 create_atoms    1 box
 mass		1 1.0
 mass            2 1.0
@@ -48,49 +50,34 @@ thermo_style    custom step time c_lj_temp ke pe etotal press vol enthalpy
 thermo		50
 run		10000
 
-label           loop
+include         in.ti_integ.fwd
+
+print           "dF with trapezoid rule: ${int_trap}" append ti_integ.log
+print           "dF with parabolic rule: ${int_simps}" append ti_integ.log
+
+pair_coeff      1 1 lj/cut 1.0 1.0 5.0
+pair_coeff      2 2 gauss/cut 0 0 0.01 1.0
+pair_coeff      1 2 gauss/cut 0.0 0.0 ${gauss_sigma} 1.0
 
 unfix           1
-
-variable        lambda equal ${step_number}*${lambda_step}
-variable        fl equal ${lambda}*${lambda}*(3-2*${lambda})
-variable        dfdl equal 6*${lambda}*(1-${lambda})
-variable        eps equal ${fl}
-variable        gauss_e equal -3.75*(1-${fl})
-
-pair_coeff      1 1 lj/cut ${eps} 1.0 5.0
-pair_coeff      1 2 gauss/cut ${gauss_e} 0.0 0.1 1.0
-
 fix		1 work langevin 0.779 0.779 0.5 78278 zero yes
 
-compute         pe_gauss all pair gauss/cut
-compute         pe_lj all pair lj/cut
+thermo_style    custom step time c_lj_temp ke pe etotal press vol enthalpy
 
-thermo_style    custom step time c_lj_temp ke pe etotal press vol c_pe_gauss c_pe_lj
+run             10000
 
-run             5000
+variable        int_trap_back equal 0
+variable        int_simps_back equal 0
 
-reset_timestep  0
+include         in.ti_integ.back
 
-variable        lj_m_gauss equal c_pe_lj/${fl}-c_pe_gauss/(1-${fl})
-fix             du_ave all ave/time ${sample_interval} ${sample_count} ${length_each_lambda} v_lj_m_gauss
-run             ${length_each_lambda}
+print           "dF with trapezoid rule: ${int_trap_back}" append ti_integ.log
+print           "dF with parabolic rule: ${int_simps_back}" append ti_integ.log
 
-variable        du_ave equal f_du_ave/atoms*2
-print           "Lambda: ${lambda}" append ti_integ.txt
-print           "f(l): ${fl}" append ti_integ.txt
-print           "df/dl: ${dfdl}" append ti_integ.txt
-print           "Energy difference: ${du_ave}" append ti_integ.txt
-variable        int_trap equal ${int_trap}+${lambda_step}*${dfdl}*${du_ave}
-variable        int_simps equal ${int_simps}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0*(1+${step_number}%2)
+variable        int_trap_ave equal (${int_trap}+${int_trap_back})/2.0
+variable        int_simps_ave equal (${int_simps}+${int_simps_back})/2.0
 
+print           "average dF (trapezoid): ${int_trap_ave}" append ti_integ.log
+print           "average dF (parabolic): ${int_simps_ave}" append ti_integ.log
 
-uncompute         pe_gauss
-uncompute         pe_lj
-unfix             du_ave
-
-next              step_number
-if ${step_number}<${nsteps_lambda} then "jump SELF loop"
-
-print         "dF with trapezoid rule: ${int_trap}" append ti_integ.txt
-print         "dF with parabolic rule: ${int_simps}" append ti_integ.txt
+write_dump      work atom final.dump

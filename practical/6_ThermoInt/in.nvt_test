@@ -1,13 +1,12 @@
 # 3d Lennard-Jones melt
-variable        d equal 0.88
+variable        d equal 0.95
 variable        t_s equal 5000
-variable        lambda index 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
 
 units		lj
 atom_style	atomic
 
-lattice		sc $d origin 0.5 0.5 0.5
-region		box block 0 10 0 10 0 10
+lattice		fcc $d
+region		box block 0 7 0 7 0 7
 create_box	1 box
 create_atoms	1 box
 mass		1 1.0
@@ -30,7 +29,7 @@ thermo		50
 run		10000
 
 reset_timestep  0
-fix             p_ave all ave/time 50 300 15000 c_thermo_press
-run             15000
+fix             p_ave all ave/time 50 300 300000 c_thermo_press
+run             300000
 
 print           "Pressure: ${p_ave}"
