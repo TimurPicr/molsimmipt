@@ -31,7 +31,7 @@ print           "f(l): ${fl}" append ti_integ.log
 print           "df/dl: ${dfdl}" append ti_integ.log
 print           "Energy difference: ${du_ave}" append ti_integ.log
 variable        int_trap_back equal ${int_trap_back}+${lambda_step}*${dfdl}*${du_ave}
-variable        int_simps_back equal ${int_simps_back}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0*(1+${step_number}%2)
+variable        int_simps_back equal ${int_simps_back}+${lambda_step}*${dfdl}*${du_ave}*2.0/3.0*(1+${step_num_back}%2)
 
 
 uncompute         pe_gauss

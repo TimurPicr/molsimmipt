@@ -29,8 +29,8 @@ variable        diffus equal v_msd_xyz/(6*(v_dtime+1e-12))
 thermo_style	custom step time temp ke pe etotal press c_msd[4]
 thermo          50
 
-fix             print_msd all print 50 "${dtime} ${msd_xyz} ${diffus}" file msd.T${temp}.rho${rho}.txt screen no
+fix             print_msd all print 50 "${dtime} ${msd_xyz} ${diffus}" file msd.T${temp}.rho${rho}.log screen no
 run		${sim_steps}
-print           "Diffusivity estimate (MSD): ${diffus}" append msd.T${temp}.rho${rho}.txt
+print           "Diffusivity estimate (MSD): ${diffus}" append msd.T${temp}.rho${rho}.log
 
 write_data      liquid.T${temp}.rho${rho}.data

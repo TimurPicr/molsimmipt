@@ -1,5 +1,5 @@
 # 3d Lennard-Jones melt
-variable        d index 0.94
+variable        d index 0.86
 variable        sample_interval index 50
 variable        sample_count index 10
 variable        nsteps_lambda index 64
@@ -65,6 +65,8 @@ fix		1 work langevin 0.779 0.779 0.5 78278 zero yes
 thermo_style    custom step time c_lj_temp ke pe etotal press vol enthalpy
 
 run             10000
+
+write_dump      work atom intermed.dump
 
 variable        int_trap_back equal 0
 variable        int_simps_back equal 0

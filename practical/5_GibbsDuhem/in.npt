@@ -52,22 +52,22 @@ print           "Average volume: ${ave_vol}"
 write_restart	${phase}.T${T_prod}.restart
 
 #Diff eq:
-#            delta H
-# dP / dT = -----------
-#            T delta V
+#             ΔH
+# dP / dT = ------
+#            T ΔV
 
 # Predictor-Corrector RK
 # Predictor:
-# P'(T+dT) = P(T) + dH(P,T)/(dV(P,T) * T) * dT
+# P'(T+dT) = P(T) + ΔH(P,T)/(ΔV(P,T) * T) * dT
 
 # Corrector:
-# P(T+dT) = P(T) + dT * (dH'/[(T+dT) * dV'] + dH /(T * dV) ) / 2
+# P(T+dT) = P(T) + dT * (ΔH'/[(T+dT) * dV'] + ΔH /(T * ΔV) ) / 2
 
 # Modified Euler's method
 # Predictor:
-# P'(T + dT/2) = P(T) + dH(P,T)/(dV(P,T) * T) * dT / 2
+# P'(T + dT/2) = P(T) + ΔH(P,T)/(ΔV(P,T) * T) * dT / 2
 
 # Corrector:
-#                               delta H'
-# P(T + dT) = P(T) + dT * ---------------------
-#                         (T + dT/2) * delta V'
+#                               ΔH'
+# P(T + dT) = P(T) + dT * -----------------
+#                         (T + dT/2) * ΔV'

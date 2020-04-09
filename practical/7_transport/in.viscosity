@@ -10,7 +10,7 @@ variable        n_dump equal ${t_every}*${n_acc}
 variable        run_steps equal ${n_dump}*${n_windows}
 
 log             log.viscosity.gk.T${temp}.rho${rho}
-shell           rm vacf.T${temp}.rho${rho}.txt
+shell           rm vacf.T${temp}.rho${rho}.log
 units		lj
 atom_style	atomic
 
@@ -28,7 +28,7 @@ variable        pxy equal pxy
 variable        pxz equal pxz
 variable        pyz equal pyz
 
-fix             SACF all ave/correlate ${t_every} ${n_acc} ${n_dump} v_pxy v_pxz v_pyz type auto file viscosity.gk.T${temp}.rho${rho}.txt ave running
+fix             SACF all ave/correlate ${t_every} ${n_acc} ${n_dump} v_pxy v_pxz v_pyz type auto file viscosity.gk.T${temp}.rho${rho}.log ave running
 
 thermo_style	custom step time temp ke pe etotal press
 thermo          200
