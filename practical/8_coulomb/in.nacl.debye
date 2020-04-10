@@ -1,11 +1,12 @@
 variable        kappa index 0.85
+variable        coul_rcut index 15.0
 
 log             log.NaCl.debye.kappa.${kappa}
 
 units		real
 atom_style	charge
 
-pair_style	lj/cut/coul/debye ${kappa} 15.0 35.0
+pair_style	lj/cut/coul/debye ${kappa} 15.0 ${coul_rcut}
 include         lattice.conf
 pair_modify     mix geometric shift yes
 
@@ -21,7 +22,7 @@ clear
 
 read_restart    final_state.pppm.restart
 
-pair_style	lj/cut/coul/debye ${kappa} 15.0 35.0
+pair_style	lj/cut/coul/debye ${kappa} 15.0 ${coul_rcut}
 pair_coeff	1 1 0.03463 2.52 15.0
 pair_coeff	2 2 0.38218 3.85 15.0
 pair_modify     mix geometric shift yes

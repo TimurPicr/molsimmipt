@@ -11,7 +11,7 @@ include         lattice.conf
 
 pair_modify     mix geometric shift yes table 16
 
-velocity        all create 600.0 73412
+velocity        all create 600.0 73413
 fix		1 all nve
 
 thermo		50
@@ -21,7 +21,7 @@ run		0
 variable	E0 equal ecoul+elong
 variable	E0 equal ${E0}
 
-run		500
+run		200
 
 variable	E1 equal ecoul+elong
 variable	E1 equal ${E1}
