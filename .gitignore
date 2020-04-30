@@ -7,3 +7,5 @@ log.*
 *.restart
 *.log
 *.data
+*.tmp
+tmp.*

@@ -1,0 +1,72 @@
+# Structure optimization for vacancy in silicon crystal
+
+variable        minstyle index cg
+units           metal
+
+atom_style      atomic
+atom_modify     map array
+boundary        p p p
+atom_modify	sort 0 0.0
+
+# coordination number cutoff
+
+variable r equal 2.835
+
+# diamond unit cell
+
+variable a equal 5.431
+lattice         custom $a               &
+                a1 1.0 0.0 0.0          &
+                a2 0.0 1.0 0.0          &
+                a3 0.0 0.0 1.0          &
+                basis 0.0 0.0 0.0       &
+                basis 0.0 0.5 0.5       &
+                basis 0.5 0.0 0.5       &
+                basis 0.5 0.5 0.0       &
+                basis 0.25 0.25 0.25    &
+                basis 0.25 0.75 0.75    &
+                basis 0.75 0.25 0.75    &
+                basis 0.75 0.75 0.25
+
+region          myreg block     0 4 &
+                                0 4 &
+                                0 4
+
+#create_box      1 myreg
+#create_atoms    1 region myreg
+#mass            1       28.06
+#write_data      initial.sivac
+
+read_data       initial.sivac
+
+# make a vacancy
+
+group Si type 1
+
+group del id 300
+delete_atoms group del compress no
+group vacneigh id 174 175 301 304 306 331 337
+ 
+# choose potential
+
+pair_style      sw
+pair_coeff * * Si.sw Si
+
+# set up neb run
+
+variable	u uloop 20
+
+# only output atoms near vacancy
+
+# initial minimization to relax vacancy
+
+displace_atoms  all random 0.1 0.1 0.1 123456
+
+thermo_style    custom step pe press fmax fnorm
+thermo_modify   format float %.15g
+thermo          1
+dump            dump_min all custom 1 Si.min.*.dump id type xu yu zu
+min_style       ${minstyle}
+
+log             log.opt.${minstyle}
+minimize	1.0e-10 1.0e-8 1000 10000
