@@ -1,9 +1,10 @@
 # 3d Lennard-Jones melt
 
-variable	ave_one equal 500
-variable	nintervals index 40
-variable        mcmaxdispl index 0.1
-variable	prodlength equal ${ave_one}*${nintervals}
+variable    ave_one equal 500
+variable    nintervals index 40
+variable    mcmaxdispl index 0.1
+variable    prodlength equal ${ave_one}*${nintervals}
+variable    temperature index 1.0
 
 units		lj
 atom_style	atomic
@@ -29,7 +30,7 @@ thermo		500
 thermo_style	custom step temp etotal press
 run		2500
 
-fix		isokin all temp/rescale 20 1.0 1.0 0.02 1.0
+fix		isokin all temp/rescale 20 ${temperature} ${temperature} 0.02 1.0
 
 run		50000
 
@@ -44,7 +45,7 @@ reset_timestep	0
 fix		ave_p all ave/time ${nintervals} ${ave_one} ${prodlength} c_p_all
 unfix	1
 fix		1 all nve
-fix		2 all temp/berendsen 1.0 1.0 0.2
+fix		2 all temp/berendsen ${temperature} ${temperature}  0.2
 
 thermo		200
 
@@ -63,7 +64,7 @@ reset_timestep	0
 fix		ave_p all ave/time ${nintervals} ${ave_one} ${prodlength} c_p_all
 unfix	1
 fix		1 all nve
-fix		2 all langevin 1.0 1.0 0.2 72300 zero yes
+fix		2 all langevin ${temperature} ${temperature}  0.2 72300 zero yes
 
 thermo		200
 
@@ -81,7 +82,7 @@ reset_timestep	0
 
 fix		ave_p all ave/time ${nintervals} ${ave_one} ${prodlength} c_p_all
 unfix	1
-fix		1 all nvt temp 1.0 1.0 0.2
+fix		1 all nvt temp  ${temperature} ${temperature} 0.2
 
 thermo		200
 
@@ -96,7 +97,7 @@ unfix ave_p
 reset_timestep	0
 
 unfix	1
-fix		montecarlo all gcmc 1 0 125 1 32451 1.0 1.0 ${mcmaxdispl}
+fix		montecarlo all gcmc 1 0 125 1 32451 ${temperature} ${temperature} ${mcmaxdispl}
 
 fix		ave_p all ave/time ${nintervals} ${ave_one} ${prodlength} c_p_all
 
