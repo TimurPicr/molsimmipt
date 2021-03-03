@@ -94,11 +94,11 @@ thermo		50
 # пропущено: run_style (по умолчанию - verlet)
 
 # провести расчёт длиной 250 шагов
-run		240
+run		250
 
 # сбросить номер шага по времени
 reset_timestep  0
-run             260
+run             250
 
 
 #dump		id all atom 50 dump.melt
