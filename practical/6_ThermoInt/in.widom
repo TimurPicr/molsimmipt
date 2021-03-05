@@ -16,7 +16,7 @@ group           work type 1
 
 velocity	work create 1.0 87287 mom yes
 
-pair_style      lj/smooth 3.0 4.0
+pair_style      lj/gromacs 3.0 4.0
 
 neighbor	0.3 bin
 neigh_modify	every 5 delay 0 check yes
