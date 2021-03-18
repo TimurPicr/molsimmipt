@@ -49,7 +49,7 @@ fix		2 all nvt temp 2.0 2.0 300
 variable        p1 equal pxx
 variable        p2 equal pyy
 variable        p3 equal pzz
-fix             print_pressure all print 1000 "${p1} ${p2} ${p3}" file pressure.txt screen no
+fix             print_pressure all print 1000 "${step} ${p1} ${p2} ${p3}" file pressure.txt screen no
 
 reset_timestep 0
 compute        profilex all chunk/atom bin/1d x lower 0.001 units reduced
