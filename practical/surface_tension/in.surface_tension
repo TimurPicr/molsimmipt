@@ -1,6 +1,6 @@
 log             log.twophase.txt
 
-variable	temp equal 2.0
+variable	temp equal 0.85
 variable	press1 equal 0.1
 variable	press2 equal 0.1
 variable	x1 equal 200
@@ -39,13 +39,13 @@ neigh_modify	every 20 delay 0 check no
 
 timestep       0.001
 
-fix             1 all npt temp 2.0 2.0 300 x ${press1} ${press2} 2000.0
+fix             1 all npt temp 0.85 0.85 5 x ${press1} ${press2} 2000.0
 
 
 run             500000
 
 unfix		1
-fix		2 all nvt temp 2.0 2.0 300 
+fix		2 all nvt temp 0.85 0.85 5 
 variable        p1 equal pxx
 variable        p2 equal pyy
 variable        p3 equal pzz
