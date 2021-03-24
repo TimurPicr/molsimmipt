@@ -10,7 +10,7 @@ variable        n_dump equal ${t_every}*${n_acc}
 variable        run_steps equal ${n_dump}*${n_windows}
 
 log             log.viscosity.gk.T${temp}.rho${rho}
-shell           rm vacf.T${temp}.rho${rho}.log
+shell           rm log.sacf.T${temp}.rho${rho}.txt
 units		lj
 atom_style	atomic
 
@@ -28,7 +28,7 @@ variable        pxy equal pxy
 variable        pxz equal pxz
 variable        pyz equal pyz
 
-fix             SACF all ave/correlate ${t_every} ${n_acc} ${n_dump} v_pxy v_pxz v_pyz type auto file viscosity.gk.T${temp}.rho${rho}.log ave running
+fix             SACF all ave/correlate ${t_every} ${n_acc} ${n_dump} v_pxy v_pxz v_pyz type auto file log.sacf.gk.T${temp}.rho${rho}.txt ave running
 
 thermo_style	custom step time temp ke pe etotal press
 thermo          200
@@ -39,6 +39,9 @@ variable        vxy equal trap(f_SACF[3])*${gkscale}
 variable        vxz equal trap(f_SACF[4])*${gkscale}
 variable        vyz equal trap(f_SACF[5])*${gkscale}
 
+variable        step0 equal $(step)
+variable        dtime equal (step-${step0})*dt
+fix             print_shear all print 1 "$(v_dtime) $(pxy) $(pxz) $(pyz)" file log.shear.T${temp}.rho${rho}.txt screen no title "Time Pxy Pxz Pyz"
 run		${run_steps}
 
 write_data      liquid.T${temp}.rho${rho}.data
