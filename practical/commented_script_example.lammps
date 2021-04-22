@@ -3,7 +3,7 @@
 variable        lj_density equal 0.8442
 variable        lj_temp equal 1.0
 
-log             melt.d${lj_density}.T${lj_temp}.txt
+log             log.melt.d${lj_density}.T${lj_temp}.txt
 # Единицы измерения (по умолчанию LJ)
 units		lj
 

@@ -9,3 +9,6 @@ log.*
 *.data
 *.tmp
 tmp.*
+dump.*
+screen.*
+neb_path.*
