@@ -1,0 +1,62 @@
+log             log.twophase.txt
+
+variable	temp equal 0.85
+variable	press1 equal 0.1
+variable	press2 equal 0.1
+variable	x1 equal 200
+units		lj
+
+
+atom_style	full
+
+lattice		sc 4.21
+region		box block 0 300 0 50 0 50
+region		liq block 100 200 0 50 0 50
+region		gas block 100 200 0 50 0 50 side out
+create_box	1 box
+
+mass		1 1.0
+create_atoms 1 random 1000 945769 gas
+create_atoms 1 random 20000 59357 liq 
+
+pair_style	lj/cut 3.0
+pair_coeff	1 1 1.0 1.0
+
+dump		snap all custom 1000 2phase.dump id type xs ys zs
+
+thermo_style    custom step temp pxx pyy pzz lx
+thermo		1000
+
+minimize	1.0e-8 1.0e-10 10000 100000
+
+neighbor	0.5 bin
+neigh_modify	every 20 delay 0 check no
+
+timestep       0.001
+
+fix             1 all npt temp ${temp} ${temp} 5 x ${press1} ${press2} 2000.0
+
+
+run             500000
+
+unfix		1
+fix		2 all nvt temp ${temp} ${temp} 5 
+variable	st equal step
+variable        p1 equal pxx
+variable        p2 equal pyy
+variable        p3 equal pzz
+fix             print_pressure all print 1000 "${st} ${p1} ${p2} ${p3}" file pressure.txt screen no
+
+reset_timestep 0
+compute        profilex all chunk/atom bin/1d x lower 0.001 units reduced
+compute        profiley all chunk/atom bin/1d y lower 0.01 units reduced
+compute        profilez all chunk/atom bin/1d z lower 0.01 units reduced
+compute		stress all stress/atom NULL
+fix            ave_densityx all ave/chunk 200 500 100000 profilex density/mass file ${temp}.densitx.txt
+fix            ave_densityy all ave/chunk 200 500 100000 profiley density/mass file ${temp}.density.txt
+fix            ave_densityz all ave/chunk 200 500 100000 profilez density/mass file ${temp}.densitz.txt
+fix				ave_stressz all ave/chunk 200 500 100000 profilez c_stress[3] file ${temp}.stressz.txt
+fix             ave_stressx all ave/chunk 200 500 100000 profilex c_stress[1] file ${temp}.stress.txt
+fix             ave_stressy all ave/chunk 200 500 100000 profiley c_stress[2] file ${temp}.stressy.txt
+
+run	2000000
