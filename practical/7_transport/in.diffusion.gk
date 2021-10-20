@@ -32,6 +32,7 @@ fix             fixVACF all vector 1 c_myVACF[4]
 variable        diff_integ equal dt*trap(f_fixVACF)
 variable        curVACF equal c_myVACF[4]
 
+variable        step0 equal step
 variable        step0 equal $(step0)
 variable        dtime equal (step-${step0})*dt
 fix             print_vacf all print 2 "${dtime} ${curVACF} ${diff_integ}" append log.vacf.T${temp}.rho${rho}.txt screen no
