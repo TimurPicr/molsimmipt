@@ -1,0 +1,58 @@
+# 3d Lennard-Jones melt
+
+variable	length index 5000
+variable	tstep equal 20/${length}
+
+units		lj
+atom_style	bond
+
+lattice		sc 0.4221
+region		box block 0 10 0 10 0 10
+create_box	1 box bond/types 1 extra/bond/per/atom 1 extra/special/per/atom 1
+molecule	dimer molecule.dimer
+
+create_atoms	0 box mol dimer 234567
+mass		1 1.0
+
+#velocity	all create 3.0 87287
+
+pair_style	lj/smooth 2.5 3.0
+pair_coeff	1 1 1.0 1.0
+
+bond_style	harmonic
+bond_coeff      1 25000.0 1.0
+
+neighbor	0.3 bin
+neigh_modify	every 20 delay 0 check no
+
+fix		1 all nve/limit 0.05
+fix		2 all langevin 3.0 1.5 0.1 765432 zero yes
+fix		3 all momentum 10 linear 1 1 1 angular
+
+thermo_style custom step time temp ke pe etotal press lx
+
+thermo		50
+run		1000
+
+unfix		1
+unfix		2
+unfix		3
+
+fix		1 all nve
+
+run_style	respa 2 10 bond 1 pair 2
+
+run		5000
+
+timestep	${tstep}
+
+reset_timestep	0
+variable	e0 equal etotal
+run		0
+variable	ediff equal etotal-${e0}
+
+thermo_style	custom step time temp ke pe v_ediff press
+
+log		log.molecule.respa.${length}.txt
+
+run		${length}

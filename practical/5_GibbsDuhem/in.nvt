@@ -1,0 +1,59 @@
+# 3d Lennard-Jones melt
+# initial point:
+# T = 0.9
+# density = 0.01532 (gas)
+# density = 0.7518 (liquid)
+
+variable        d index 0.01532
+variable        init_T index 0.9
+variable        production_length index 250000
+variable        production_sparsity equal ${production_length}/2000
+if $d<0.316 then &
+"variable       phase string gas" &
+            else &
+"variable       phase string liq" 
+
+log             ${phase}.T${init_T}.equilibration.log
+units		lj
+atom_style	atomic
+
+lattice		sc $d
+region		box block 0 10 0 10 0 10
+create_box	1 box
+create_atoms	1 box
+mass		1 1.0
+
+velocity	all create 3.0 87287
+
+pair_style	lj/cut 3.0
+pair_coeff	1 1 1.0 1.0
+
+pair_modify	tail yes
+
+neighbor	0.3 bin
+neigh_modify	every 20 delay 0 check no
+
+fix		1 all nvt temp ${init_T} ${init_T} 0.2
+
+timestep	0.002
+
+compute		vpress all pressure thermo_temp
+
+thermo_style    custom step time temp ke pe etotal press vol enthalpy
+
+# Equilibration run
+thermo		50
+run		60000
+
+reset_timestep 0
+
+log            ${phase}.T${init_T}.production.log
+
+fix	       ave_pressure all ave/time ${production_sparsity} 2000 ${production_length} c_thermo_press
+
+run             ${production_length}
+
+variable	p equal f_ave_pressure
+print		"Average pressure: $p"
+
+write_restart	${phase}.T${init_T}.restart

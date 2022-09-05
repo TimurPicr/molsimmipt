@@ -1,0 +1,50 @@
+# 3d Lennard-Jones melt
+
+variable        rho index 0.85
+variable        temp index 1.5
+
+variable        t_every index 5
+variable        n_acc index 1000
+variable        n_windows index 25
+variable        n_dump equal ${t_every}*${n_acc}
+variable        run_steps equal ${n_dump}*${n_windows}
+
+log             log.viscosity.gk.T${temp}.rho${rho}
+shell           rm log.sacf.T${temp}.rho${rho}.txt
+units		lj
+atom_style	atomic
+
+pair_style	lj/smooth 2.5 3.0
+
+read_data       liquid.T${temp}.rho${rho}.data
+
+neighbor	0.3 bin
+neigh_modify	every 20 delay 0 check no
+
+fix             1 all nve
+timestep        0.002
+
+variable        pxy equal pxy
+variable        pxz equal pxz
+variable        pyz equal pyz
+
+fix             SACF all ave/correlate ${t_every} ${n_acc} ${n_dump} v_pxy v_pxz v_pyz type auto file log.sacf.gk.T${temp}.rho${rho}.txt ave running
+
+thermo_style	custom step time temp ke pe etotal press
+thermo          200
+
+variable        gkscale equal vol/${temp}*${t_every}*dt
+
+variable        vxy equal trap(f_SACF[3])*${gkscale}
+variable        vxz equal trap(f_SACF[4])*${gkscale}
+variable        vyz equal trap(f_SACF[5])*${gkscale}
+
+variable        step0 equal $(step)
+variable        dtime equal (step-${step0})*dt
+fix             print_shear all print 1 "$(v_dtime) $(pxy) $(pxz) $(pyz)" file log.shear.T${temp}.rho${rho}.txt screen no title "Time Pxy Pxz Pyz"
+run		${run_steps}
+
+write_data      liquid.T${temp}.rho${rho}.data
+
+variable        eta equal (${vxy}+${vxz}+${vyz})/3
+print           "Viscosity estimate (GK): ${eta}"

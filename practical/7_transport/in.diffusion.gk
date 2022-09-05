@@ -1,0 +1,50 @@
+variable        rho index 0.85
+variable        temp index 1.5
+variable        loop_iterations index 25
+variable        loop_length index 2500
+
+log             log.diffusion.gk.T${temp}.rho${rho}
+shell           rm log.vacf.T${temp}.rho${rho}.txt
+units		lj
+atom_style	atomic
+
+variable        loop_counter loop ${loop_iterations}
+variable        diff_accum equal 0
+
+label           loop
+clear
+
+pair_style	lj/smooth 2.5 3.0
+
+read_data       liquid.T${temp}.rho${rho}.data
+
+neighbor	0.3 bin
+neigh_modify	every 20 delay 0 check no
+
+fix		1 all nve
+timestep        0.002
+thermo		50
+
+reset_timestep  0
+compute         myVACF all vacf
+
+fix             fixVACF all vector 1 c_myVACF[4]
+variable        diff_integ equal dt*trap(f_fixVACF)
+variable        curVACF equal c_myVACF[4]
+
+variable        step0 equal step
+variable        step0 equal $(v_step0)
+variable        dtime equal (step-${step0})*dt
+fix             print_vacf all print 2 "${dtime} ${curVACF} ${diff_integ}" append log.vacf.T${temp}.rho${rho}.txt screen no
+thermo_style	custom step time temp ke pe etotal press
+
+run             ${loop_length}
+variable        diff_accum equal ${diff_accum}+${diff_integ}/(3*${loop_iterations})
+unfix           fixVACF
+write_data      liquid.T${temp}.rho${rho}.data
+print           "" append log.vacf.T${temp}.rho${rho}.txt screen no
+
+next            loop_counter
+jump            SELF loop
+
+print           "Diffusivity estimate (GK): ${diff_accum}" append log.vacf.T${temp}.rho${rho}.txt

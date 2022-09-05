@@ -1,0 +1,15 @@
+log.*
+*~
+*.swp
+*gnuplot
+\#*
+*.dump
+*.restart
+*.log
+*.data
+*.tmp
+tmp.*
+dump.*
+screen.*
+neb_path.*
+.ipynb*

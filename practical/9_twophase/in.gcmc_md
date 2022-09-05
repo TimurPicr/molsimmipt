@@ -1,0 +1,66 @@
+# methane simulation
+
+variable        f0 index 11
+
+log             log.mcinit.txt
+
+units		real
+atom_style	atomic
+
+variable        vol0 equal 500*150/${f0}*1.38065e+2
+variable        a0 equal ${vol0}^(1/3)
+
+lattice		sc 1.0
+region		box block 0 ${a0} 0 ${a0} 0 ${a0} units box
+create_box	1 box
+create_atoms	1 random 500 54321 box
+mass		1 16.0426
+
+velocity	all create 300.0 87287
+
+pair_style	lj/smooth 12.0 14.0
+pair_coeff	1 1 0.29410 3.73
+
+neighbor	0.3 bin
+neigh_modify	every 20 delay 0 check no
+
+fix		1 all nve/limit 0.3
+fix		2 all temp/berendsen 150.0 150.0 20.0
+fix		3 all momentum 1 linear 1 1 1 angular
+
+thermo_style    custom step temp ke pe etotal press density
+thermo		250
+
+timestep        1
+run		15000
+
+unfix	1
+unfix	2
+
+reset_timestep  0
+compute         mdtemp all temp
+compute_modify  mdtemp dynamic/dof yes
+
+compute         mdpress all pressure mdtemp
+compute_modify  mdpress dynamic/dof yes
+
+fix             1 all nvt temp 150.0 150.0 100.0
+fix_modify      1 temp mdtemp
+
+variable        fug equal ${f0}
+
+variable        max_fug equal ${f0}+5
+
+thermo_style    custom step c_mdtemp ke pe etotal c_mdpress density
+
+label LOOP_START
+
+log             log.mc.${fug}.txt
+
+fix             mc all gcmc 2000 10 0 1 84560 150.0 0.0 1.0 pressure ${fug}
+
+run	        600000
+
+variable        fug equal ${fug}+1
+
+if ${fug}>${max_fug} then "quit 0" else "jump SELF LOOP_START"

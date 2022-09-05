@@ -1,0 +1,2 @@
+pair_style	eam
+pair_coeff	1 1 potentials/Cu_u3.eam #Cu

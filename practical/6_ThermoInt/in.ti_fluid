@@ -1,0 +1,71 @@
+# 3d Lennard-Jones melt
+
+# Thermodynamic integration from ideal gas
+# U(lambda) = (exp(lambda) - 1e-5)*U_lj
+# lambda is in range ln(1e-5)..ln(1+1e-5)
+variable        d index 0.84
+variable        temperature index 1.0
+
+variable        c equal 1e-5
+variable integ_node index 0.9957276855604063 0.9745539561713792 0.9324322116798845 &
+                          0.8707655927996972 0.7930436177338456 0.7029225756886985 &
+                          0.6038924775039493 0.5 0.39610752249605075 &
+                          0.2970774243113014 0.20695638226615443 0.12923440720030277 &
+                          0.06756778832011545 0.025446043828620757 0.004272314439593694
+
+variable loop_counter loop 15
+
+shell           rm ti_fluid.log
+
+log             ti_fluid.log
+units		lj
+atom_style	atomic
+
+lattice		sc $d origin 0.5 0.5 0.5
+region		box block 0 8 0 8 0 8
+create_box	2 box
+create_atoms    1 box
+mass        1 1.0
+mass        2 1.0
+set atom 1 type 2
+
+group       bulk type 1
+group       extra type 2
+compute         inter_energy bulk group/group extra
+
+velocity	all create 1.0 87287 mom yes
+
+pair_style      lj/gromacs 3.0 4.0
+
+neighbor	0.3 bin
+neigh_modify	every 5 delay 0 check yes
+
+variable    lambda_range  equal ln(1+$c)-ln($c)
+label loop_start
+
+log             ti_fluid.${loop_counter}.log
+
+variable        lambda equal $(v_integ_node*v_lambda_range+ln(v_c))
+pair_coeff      1 1 1.0 1.0
+pair_coeff      1 2 $(exp(v_lambda)-v_c) 1.0
+pair_coeff      2 2 1.0 1.0
+
+fix             1 all langevin ${temperature} ${temperature} 0.5 78278 zero yes
+fix             2 all nve
+
+timestep        0.002
+
+thermo_style    custom step time temp ke pe etotal press vol enthalpy
+
+thermo		50
+run		20000
+
+variable        step equal step
+variable        pe equal c_inter_energy
+fix             print_pe all print 50 "${step} ${pe}" file ti_energy.${loop_counter}.log title "Step    PotEng" screen no
+run             200000
+
+next loop_counter
+next integ_node
+
+jump SELF loop_start

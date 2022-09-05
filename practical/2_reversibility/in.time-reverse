@@ -1,0 +1,71 @@
+# Simulation of LAMMPS logo forward and backward integration
+
+shell		mkdir log
+shell		mkdir dump
+shell		mkdir diff
+
+variable	ts_fwd index 0.005
+variable	scale index 2
+variable	nsteps index 100
+
+variable	ts_back equal ${ts_fwd}/${scale}
+variable	nsteps_back equal ${nsteps}*${scale}
+variable	suffix string ${nsteps}steps.dt.${ts_fwd}.scale.${scale}
+
+log		log/${suffix}.log
+units		lj
+atom_style	atomic
+
+# Load the initial configuration
+include		"lammps_logo.inc"
+
+mass		* 1.0
+
+pair_style	lj/smooth 2.5 3.0
+pair_coeff	* * 1.0 1.0
+
+timestep        ${ts_fwd}
+neighbor	0.3 bin
+neigh_modify	delay 0 every 1 check yes
+
+velocity	all create 2.0 87287 loop geom
+
+thermo_style	custom step time temp ke pe etotal press
+thermo		100
+
+dump		fwd all custom 10 dump/fwd.${suffix}.dump id type x y z
+dump_modify	fwd sort id
+
+# store the initial state for comparison at the end
+fix		init_coords all store/state 0 xu yu
+fix		init_vels all store/state 0 vx vy
+
+# dissolve the lattice
+fix		1 all nve
+fix		2 all enforce2d
+
+run		${nsteps}
+
+# reverse the velocities and continue run
+
+variable        vxflip atom -vx
+variable        vyflip atom -vy
+velocity	all set v_vxflip v_vyflip NULL
+
+undump		fwd
+dump		back all custom 10 dump/back.${suffix}.dump id type x y z
+dump_modify	back sort id
+
+timestep        ${ts_back}
+
+compute		coords all property/atom xu yu
+compute		vels all property/atom vx vy
+
+variable	r_error_sq atom "(c_coords[1] - f_init_coords[1])^2 + (c_coords[2] - f_init_coords[2])^2"
+variable	v_error_sq atom "(c_vels[1] + f_init_vels[1])^2 + (c_vels[2] + f_init_vels[2])^2"
+
+fix		1 all nve
+
+compute         boxchunk all chunk/atom bin/1d x lower 1.0 units reduced
+fix		mean_sq_vel_error all ave/chunk ${nsteps} 1 ${nsteps} boxchunk v_r_error_sq v_v_error_sq file diff/traj_diff.${suffix}.txt
+run		${nsteps_back}

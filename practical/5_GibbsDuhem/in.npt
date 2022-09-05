@@ -1,0 +1,73 @@
+# 3d Lennard-Jones melt
+variable        pe index 0.0165
+variable        T_prod index 0.9
+variable        T_base index ${T_prod}
+variable        phase index gas
+variable        production_length index 250000
+variable        production_sparsity equal ${production_length}/2000
+
+log             ${phase}.T${T_prod}.P${pe}.equilibration.log
+units		lj
+atom_style	atomic
+
+read_restart    ${phase}.T${T_base}.restart
+pair_style	lj/cut 3.0
+pair_coeff	1 1 1.0 1.0
+
+pair_modify	tail yes
+
+neighbor	0.3 bin
+neigh_modify	every 20 delay 0 check no
+
+fix		1 all npt temp ${T_prod} ${T_prod} 0.2 iso ${pe} ${pe} 1.0
+
+timestep	0.002
+
+compute		vpress all pressure thermo_temp
+
+thermo_style    custom step time temp ke pe etotal press vol enthalpy
+
+# Equilibration run
+thermo		50
+run		60000
+
+reset_timestep 0
+
+log            ${phase}.T${T_prod}.P${pe}.production.log
+
+variable       venthalpy equal enthalpy
+variable       vvol equal vol
+
+fix	       averaging all ave/time ${production_sparsity} 2000 ${production_length} c_thermo_press v_venthalpy v_vvol
+
+run             ${production_length}
+
+variable	p equal f_averaging[1]
+variable        H equal f_averaging[2]
+variable        ave_vol equal f_averaging[3]/atoms
+print		"Average pressure: $p"
+print           "Average enthalpy: $H"
+print           "Average volume: ${ave_vol}"
+
+write_restart	${phase}.T${T_prod}.restart
+
+#Diff eq:
+#             ΔH
+# dP / dT = ------
+#            T ΔV
+
+# Predictor-Corrector RK
+# Predictor:
+# P'(T+dT) = P(T) + ΔH(P,T)/(ΔV(P,T) * T) * dT
+
+# Corrector:
+# P(T+dT) = P(T) + dT * (ΔH'/[(T+dT) * dV'] + ΔH /(T * ΔV) ) / 2
+
+# Modified Euler's method
+# Predictor:
+# P'(T + dT/2) = P(T) + ΔH(P,T)/(ΔV(P,T) * T) * dT / 2
+
+# Corrector:
+#                               ΔH'
+# P(T + dT) = P(T) + dT * -----------------
+#                         (T + dT/2) * ΔV'
