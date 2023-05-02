@@ -1,0 +1,56 @@
+# 3d Lennard-Jones melt
+
+variable        lj_density index 0.8442
+variable        lj_temp index 1.0
+
+variable        iteration loop 10
+log             log.melt.d${lj_density}.T${lj_temp}.txt
+# Единицы измерения (по умолчанию LJ)
+units		lj
+
+# Сколько атрибутов есть у атомов
+atom_style	atomic # нет зарядов, нет молекул, у атомов есть только тип и масса
+
+lattice		fcc ${lj_density}
+
+# units lj: параметр решётки - это плотность
+# units !lj: параметр решётки - это длина в единицах длины
+
+region		simbox block 0 5 0 5 0 50
+
+create_box	1 simbox
+
+# заполнить расчётную область атомами
+create_atoms	1 box
+
+# задать массы для типов атомов
+mass		1 1.0 # для типа 1 установлена масса 1.0
+
+label   loop_start
+
+variable    init_temp equal $(0.5 + 0.1 * v_iteration)
+velocity	all create $(v_init_temp) 87287 # задать скорости группе all случайно
+
+# тип потенциала
+pair_style	lj/cut 2.5 # потенциал LJ с обрезанием, радиус обрезания 2.5
+pair_coeff	1 1 1.0 1.0 2.5
+
+# параметры составления списка соседей
+neighbor	0.3 bin # радиус списка соседей на 0.3 больше радиуса обрезания
+neigh_modify	every 20 delay 0 check no # как часто перестраивать список соседей
+
+fix		1 all nve
+
+# выводить термодинамические параметры на шагах с номером, кратным 50
+thermo		50
+
+# провести расчёт длиной 5000 шагов
+run		5000
+
+
+write_dump		all atom dump.$(step).melt
+
+write_data      lj.rho$(v_lj_density).T0$(v_init_temp).data
+
+next    iteration
+jump SELF loop_start
