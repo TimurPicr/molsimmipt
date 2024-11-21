@@ -23,13 +23,16 @@ neigh_modify	every 20 delay 0 check no
 
 timestep       0.001
 
-fix		2 all nvt temp ${temp} ${temp} 5 
+fix		2 all nvt temp ${temp} ${temp} 5
+
+#Расчет компонент тензора давлений, необходимых для поверхностного натяжения
 variable	st equal step
 variable        p1 equal pxx
 variable        p2 equal pyy
 variable        p3 equal pzz
 fix             print_pressure all print 1000 "${st} ${p1} ${p2} ${p3}" file pressure.txt screen no
 
+#Расчет профиля плотности
 compute        profilex all chunk/atom bin/1d x lower 0.001 units reduced
 fix            ave_densityx all ave/chunk 200 500 100000 profilex density/mass file ${temp}.densitx.txt
 
