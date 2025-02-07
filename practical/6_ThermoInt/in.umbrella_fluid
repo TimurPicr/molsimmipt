@@ -60,6 +60,7 @@ variable        pe equal c_inter_energy
 fix             print_pe all print 50 "$(step) $(v_pe) $(-1.0 * v_pe / v_lambda * v_dlambda) " file ti_energy.${loop_counter}.log title "Step    PotEng    dU" screen no
 run             200000
 
+unfix   print_pe
 next integ_node
 
 jump SELF loop_start
