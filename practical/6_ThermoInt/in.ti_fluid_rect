@@ -56,10 +56,9 @@ run		20000
 
 variable        step equal step
 variable        pe equal c_inter_energy
-fix             print_pe all print 50 "${step} ${pe} $(pe / v_lambda)" file ti_energy.${loop_counter}.log title "Step    PotEng    dU/dlambda" screen no
+fix             print_pe all print 50 "$(step) $(v_pe) $(v_pe / v_lambda)" file ti_energy.${loop_counter}.log title "Step    PotEng    dU/dlambda" screen no
 run             200000
 
 next loop_counter
-next integ_node
 
 jump SELF loop_start
