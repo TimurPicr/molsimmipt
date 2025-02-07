@@ -61,6 +61,6 @@ fix             print_pe all print 50 "$(step) $(v_pe) $(-1.0 * v_pe / v_lambda 
 run             200000
 
 unfix   print_pe
-next integ_node
+next loop_counter
 
 jump SELF loop_start
