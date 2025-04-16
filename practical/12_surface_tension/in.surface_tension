@@ -1,0 +1,39 @@
+log             log.twophase.txt
+
+variable	temp equal 0.85
+variable	press1 equal 0.1
+variable	press2 equal 0.1
+variable	x1 equal 200
+
+units		lj
+atom_style	full
+pair_style	lj/cut 5.0
+
+read_data	surface_tension.data
+
+dump		snap all custom 1000 2phase.dump id type xu yu zu
+
+thermo_style    custom step temp etotal pxx pyy pzz
+
+thermo		1000
+
+minimize	1.0e-8 1.0e-10 10000 100000
+
+neighbor	0.5 bin
+neigh_modify	every 20 delay 0 check no
+
+timestep       0.001
+fix	       2 all nvt temp ${temp} ${temp} 0.1
+
+#Расчет компонент тензора давлений, необходимых для поверхностного натяжения
+
+fix             print_pressure all print 1000 "$(step) $(pxx) $(pyy) $(pzz)" file pressure.txt screen no title "Step Pxx Pyy Pzz"
+
+#Расчет профиля плотности
+compute        profilex all chunk/atom bin/1d x lower 0.001 units reduced
+fix            ave_densityx all ave/chunk 200 500 100000 profilex density/mass file density_x.$(v_temp).txt
+fix            ave_pxx all ave/chunk 200 500 100000 profilex pxx file pxx_x.$(v_temp).txt
+fix            ave_pyy all ave/chunk 200 500 100000 profilex pyy file pyy_x.$(v_temp).txt
+fix            ave_pzz all ave/chunk 200 500 100000 profilex pzz file pzz_x.$(v_temp).txt
+
+run		500000
