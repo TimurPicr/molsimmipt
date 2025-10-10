@@ -69,7 +69,7 @@ label loop_start
 log             ti_fluid.${loop_counter}.log
 
 variable        lambda equal $(v_loop_counter / v_n_steps)
-variable        lambda_next equal $((v_loop_coubter + 1) / v_n_steps)
+variable        lambda_next equal $((v_loop_counter + 1) / v_n_steps)
 pair_coeff      1 1 1.0 1.0
 pair_coeff      1 2 $(v_lambda) 1.0
 pair_coeff      2 2 1.0 1.0
