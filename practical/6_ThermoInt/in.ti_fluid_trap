@@ -53,12 +53,14 @@ timestep        0.002
 thermo_style    custom step time temp ke pe etotal press vol enthalpy
 
 thermo		50
-run		20000
+run		40000
 
 variable        step equal step
 variable        pe equal c_inter_energy
-fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $(v_pe / v_lambda)" file ti_energy.0.log title "Step    PotEng    Lambda    dU/dlambda" screen no
-run             20000
+variable        lambda_next equal $(1 / v_n_steps)
+
+fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $(v_lambda_next) $(v_pe / v_lambda)" file ti_energy.0.log title "Step    PotEng    Lambda    Lambda_next    dU/dlambda" screen no
+run             50000
 
 unfix   print_pe
 
@@ -67,6 +69,7 @@ label loop_start
 log             ti_fluid.${loop_counter}.log
 
 variable        lambda equal $(v_loop_counter / v_n_steps)
+variable        lambda_next equal $((v_loop_coubter + 1) / v_n_steps)
 pair_coeff      1 1 1.0 1.0
 pair_coeff      1 2 $(v_lambda) 1.0
 pair_coeff      2 2 1.0 1.0
@@ -79,12 +82,12 @@ timestep        0.002
 thermo_style    custom step time temp ke pe etotal press vol enthalpy
 
 thermo		50
-run		20000
+run		40000
 
 variable        step equal step
 variable        pe equal c_inter_energy
-fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $(v_pe / v_lambda)" file ti_energy.${loop_counter}.log title "Step    PotEng    Lambda    dU/dlambda" screen no
-run             20000
+fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $((v_loop_counter + 1) / v_n_steps) $(v_pe / v_lambda)" file ti_energy.${loop_counter}.log title "Step    PotEng    Lambda    Lambda_next    dU/dlambda" screen no
+run             50000
 
 unfix   print_pe
 next loop_counter
