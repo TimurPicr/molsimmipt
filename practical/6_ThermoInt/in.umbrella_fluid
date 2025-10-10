@@ -37,7 +37,7 @@ neigh_modify	every 5 delay 0 check yes
 
 label loop_start
 
-log             ti_fluid.${loop_counter}.log
+log             fep_fluid.${loop_counter}.log
 
 variable        dlambda equal $(1.0 / v_n_steps)
 variable        lambda equal $(1.0 - (v_loop_counter - 1) * v_dlambda)
@@ -57,7 +57,7 @@ run		20000
 
 variable        step equal step
 variable        pe equal c_inter_energy
-fix             print_pe all print 50 "$(step) $(v_pe) $(-1.0 * v_pe / v_lambda * v_dlambda) " file ti_energy.${loop_counter}.log title "Step    PotEng    dU" screen no
+fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $(-1.0 * v_pe / v_lambda * v_dlambda) " file fep_energy.${loop_counter}.log title "Step    PotEng    Lambda    dU" screen no
 run             200000
 
 unfix   print_pe
