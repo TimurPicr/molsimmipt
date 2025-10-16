@@ -30,7 +30,7 @@ F_{N} - F_{N-1} = \int\limits_{0}^{1} \left\langle \frac{\partial U}{\partial \l
 
 Для вычисления изменения свободной энергии при замене потенциала с $`U_0`$ на $`U_1`$ можно воспользоваться формулой
 ```math
-F_1 - F_0 = -kT \ln{\left\langle \exp{-\frac{U_1 - U_0}{kT}} \right\rangle_0,
+F_1 - F_0 = -kT \ln{\left\langle \exp{\left(-\frac{U_1 - U_0}{kT}\right)} \right\rangle_0},
 ```
 где усреднение берётся по каноническому распределению для системы с потенциалом $`U_0`$, а $`U_1 - U_0`$ -- это гипотетическое изменение потенциальной энергии при замене потенциала при фиксированной конфигурации частиц.
 
@@ -39,7 +39,7 @@ F_1 - F_0 = -kT \ln{\left\langle \exp{-\frac{U_1 - U_0}{kT}} \right\rangle_0,
 F_{N} - F_{N-1} = F(\lambda=1) - F(\lambda=0) \approx F(\lambda=\lambda_M) - F(\lambda=\lambda_{min}) = (F(\lambda_M)-F(\lambda_{M-1})) + (F(\lambda_{M-1})-F(\lambda_{M-2})) + \dots + (F(\lambda_1)-F(\lambda_{min}))
 ```
 
-Поскольку меняется только взаимодействие $`N`$-й частицы с остальными, $`U(\lambda_{k+1})-U(\lambda_{k}) = U^N(\lambda_{k+1})-U^N(\lambda_{k}) = (\lambda_{k+1} - \lambda_{k})U^N(\lambda=1) = (\lambda_{k+1} - \lambda_{k})U^N(\lambda_k) / \lambda_k`$.
+Поскольку меняется только взаимодействие $`N`$-й частицы с остальными, то $`U(\lambda_{k+1})-U(\lambda_{k}) = U^N(\lambda_{k+1})-U^N(\lambda_{k}) = (\lambda_{k+1} - \lambda_{k})U^N(\lambda=1) = (\lambda_{k+1} - \lambda_{k})U^N(\lambda_k) / \lambda_k`$.
 
 ## Процедура расчета
 
