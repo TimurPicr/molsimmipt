@@ -8,6 +8,8 @@ variable        temperature index 1.0
 
 variable        n_steps index 25
 variable        lambda_min index 0.001
+variable        prod_length index 100000
+variable        eq_length index 50000
 
 variable loop_counter loop $(v_n_steps)
 
@@ -31,7 +33,7 @@ compute         inter_energy bulk group/group extra
 
 velocity	all create 1.0 87287 mom yes
 
-pair_style      lj/gromacs 3.0 4.0
+pair_style      lj/cut 4.5
 
 neighbor	0.3 bin
 neigh_modify	every 5 delay 0 check yes
@@ -52,15 +54,15 @@ timestep        0.002
 
 thermo_style    custom step time temp ke pe etotal press vol enthalpy
 
-thermo		50
-run		40000
+thermo		250
+run		$(v_eq_length)
 
 variable        step equal step
 variable        pe equal c_inter_energy
 variable        lambda_next equal $(1 / v_n_steps)
 
 fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $(v_lambda_next) $(v_pe / v_lambda)" file ti_energy.0.log title "Step    PotEng    Lambda    Lambda_next    dU/dlambda" screen no
-run             50000
+run             $(v_prod_length)
 
 unfix   print_pe
 
@@ -81,13 +83,13 @@ timestep        0.002
 
 thermo_style    custom step time temp ke pe etotal press vol enthalpy
 
-thermo		50
-run		40000
+thermo		250
+run		$(v_eq_length)
 
 variable        step equal step
 variable        pe equal c_inter_energy
 fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $((v_loop_counter + 1) / v_n_steps) $(v_pe / v_lambda)" file ti_energy.${loop_counter}.log title "Step    PotEng    Lambda    Lambda_next    dU/dlambda" screen no
-run             50000
+run             $(v_prod_length)
 
 unfix   print_pe
 next loop_counter
