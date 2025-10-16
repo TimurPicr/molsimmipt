@@ -1,0 +1,97 @@
+# 3d Lennard-Jones melt
+
+# Thermodynamic integration from ideal gas
+# U(lambda) = lambda * U_lj
+
+variable        d index 0.84
+variable        temperature index 1.0
+
+variable        n_steps index 25
+variable        lambda_min index 0.001
+variable        prod_length index 100000
+variable        eq_length index 50000
+
+variable loop_counter loop $(v_n_steps)
+
+shell           rm ti_fluid.log
+
+log             ti_fluid.log
+units		lj
+atom_style	atomic
+
+lattice		sc $d origin 0.5 0.5 0.5
+region		box block 0 8 0 8 0 8
+create_box	2 box
+create_atoms    1 box
+mass        1 1.0
+mass        2 1.0
+set atom 1 type 2
+
+group       bulk type 1
+group       extra type 2
+compute         inter_energy bulk group/group extra
+
+velocity	all create 1.0 87287 mom yes
+
+pair_style      lj/cut 4.5
+
+neighbor	0.3 bin
+neigh_modify	every 5 delay 0 check yes
+
+if $(v_lambda_min >= v_loop_counter / v_n_steps) then "jump SELF loop_start"
+
+log             ti_fluid.0.log
+
+variable        lambda equal $(v_lambda_min)
+pair_coeff      1 1 1.0 1.0
+pair_coeff      1 2 $(v_lambda) 1.0
+pair_coeff      2 2 1.0 1.0
+
+fix             1 all langevin ${temperature} ${temperature} 0.5 78278 zero yes
+fix             2 all nve
+
+timestep        0.002
+
+thermo_style    custom step time temp ke pe etotal press vol enthalpy
+
+thermo		250
+run		$(v_eq_length)
+
+variable        step equal step
+variable        pe equal c_inter_energy
+variable        lambda_next equal $(1 / v_n_steps)
+
+fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $(v_lambda_next) $(v_pe / v_lambda)" file ti_energy.0.log title "Step    PotEng    Lambda    Lambda_next    dU/dlambda" screen no
+run             $(v_prod_length)
+
+unfix   print_pe
+
+label loop_start
+
+log             ti_fluid.${loop_counter}.log
+
+variable        lambda equal $(v_loop_counter / v_n_steps)
+variable        lambda_next equal $((v_loop_counter + 1) / v_n_steps)
+pair_coeff      1 1 1.0 1.0
+pair_coeff      1 2 $(v_lambda) 1.0
+pair_coeff      2 2 1.0 1.0
+
+fix             1 all langevin ${temperature} ${temperature} 0.5 78278 zero yes
+fix             2 all nve
+
+timestep        0.002
+
+thermo_style    custom step time temp ke pe etotal press vol enthalpy
+
+thermo		250
+run		$(v_eq_length)
+
+variable        step equal step
+variable        pe equal c_inter_energy
+fix             print_pe all print 50 "$(step) $(v_pe) $(v_lambda) $((v_loop_counter + 1) / v_n_steps) $(v_pe / v_lambda)" file ti_energy.${loop_counter}.log title "Step    PotEng    Lambda    Lambda_next    dU/dlambda" screen no
+run             $(v_prod_length)
+
+unfix   print_pe
+next loop_counter
+
+jump SELF loop_start
