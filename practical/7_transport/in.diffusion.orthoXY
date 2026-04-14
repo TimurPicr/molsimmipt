@@ -1,0 +1,41 @@
+# 3d Lennard-Jones melt
+
+variable        rho index 0.85
+variable        temp index 1.5
+variable        sim_steps index 250000
+log             log.diffusion.orthoXY.T${temp}.rho${rho}
+units		lj
+atom_style	atomic
+
+pair_style	lj/cut 3.5
+pair_modify tail yes
+
+read_data       liquid.orthoXY.T${temp}.rho${rho}.data
+
+neighbor	0.3 bin
+neigh_modify	every 20 delay 0 check no
+
+fix		1 all nve
+
+timestep	0.002
+
+reset_timestep  0
+
+compute		msd all msd
+variable        msd_xy equal (c_msd[1]+c_msd[2])/2
+variable        msd_zz equal c_msd[3]
+variable        step0 equal step
+variable        step0 equal ${step0}
+variable        dtime equal (step-${step0})*dt
+variable        diffus_xy equal v_msd_xy/(4*(v_dtime+1e-12))
+variable        diffus_zz equal v_msd_zz/(2*(v_dtime+1e-12))
+thermo_style	custom step time temp ke pe etotal press c_msd[1] c_msd[2] c_msd[3]
+thermo          50
+
+fix             print_msd all print 50 "${dtime} ${msd_xy} ${msd_zz} ${diffus_xy} ${diffus_zz}" file orthoXY.T${temp}.rho${rho}.log screen no
+fix             print_shear all print 1 "$(v_dtime) $(pxy) $(pxz) $(pyz)" file log.shear.orthoXY.T${temp}.rho${rho}.txt screen no title "Time Pxy Pxz Pyz"
+run		${sim_steps}
+print           "Diffusivity estimate (MSD): ${diffus_xy}" append orthoXY.T${temp}.rho${rho}.log
+print           "Viscosity estimate: $(v_temp * 4.08556228265 / (3 * 3.14159265359 * lz * (v_diffus_xy - v_diffus_zz)))" append orthoXY.T${temp}.rho${rho}.log
+
+write_data      liquid.orthoXY.T${temp}.rho${rho}.data
