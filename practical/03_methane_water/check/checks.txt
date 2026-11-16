@@ -1,0 +1,3 @@
+lambda=0: max |dU(h)-dU(h/2)| = 9.21333e-05 kcal/mol
+lambda=0.5: max |dU(h)-dU(h/2)| = 0 kcal/mol
+lambda=1: max |dU(h)-dU(h/2)| = 0.00042 kcal/mol

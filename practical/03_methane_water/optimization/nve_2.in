@@ -1,0 +1,9 @@
+include in.common
+fix integ all nvt temp 300 300 100
+run 100
+unfix integ
+fix integ all nve
+reset_timestep 0
+variable total equal etotal
+fix avg all ave/time 10 1 10 v_total file optimization/nve_2.out
+run 1000

@@ -1,0 +1,4 @@
+include in.common
+neighbor ${skin} bin
+fix integ all nvt temp 300 300 100
+run 2000

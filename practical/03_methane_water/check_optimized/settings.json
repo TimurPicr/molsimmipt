@@ -1,0 +1,11 @@
+{
+  "eq": 100,
+  "steps": 500,
+  "block": 50,
+  "stride": 5,
+  "dt": 2,
+  "insertions": 10,
+  "seed": 340509,
+  "test": true,
+  "lmp": "./lmp_fast"
+}

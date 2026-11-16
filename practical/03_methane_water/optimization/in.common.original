@@ -1,0 +1,24 @@
+units real
+atom_style full
+bond_style harmonic
+angle_style charmm
+pair_style lj/cut/tip4p/long/soft 1 2 1 1 0.1546 2.0 0.5 14.0 14.0
+kspace_style pppm/tip4p 1.0e-4
+
+read_data ${data}
+include water_2005.ff
+variable eps equal sqrt(0.185207*0.294)
+pair_coeff 1 3 ${eps} 3.44445 1.0
+pair_coeff 2 3 0.0 3.44445 1.0
+pair_coeff 3 3 0.0 3.73 1.0
+
+group H2O type 1 2
+group CH4 type 3
+fix myshk H2O shake 1.0e-5 200 0 b 1 a 1
+
+neighbor 1.0 bin
+neigh_modify delay 0 every 1 check yes one 10000 page 100000
+timestep 1.0
+reset_timestep 0
+thermo 1000
+thermo_style custom step temp press pe density lx

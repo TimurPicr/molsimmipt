@@ -1,0 +1,9 @@
+include in.common
+delete_atoms group CH4 compress no
+fix integ all nvt temp ${T} ${T} 100
+run ${eq}
+reset_timestep 0
+
+dump coords sample custom ${stride} ${out}/positions.dump id type x y z
+dump_modify coords sort id pbc yes format float %.12g
+run ${steps}

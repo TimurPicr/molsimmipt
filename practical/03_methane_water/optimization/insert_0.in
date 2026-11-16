@@ -1,0 +1,9 @@
+include in.common
+unfix myshk
+set group CH4 x 2.6047301583425835 y 13.970559680662607 z 5.623608434947603
+pair_coeff 1 3 lj/cut/soft 0.23334707626194934 3.44445 0.0
+run 0
+variable zero equal $(pe:%.16g)
+pair_coeff 1 3 lj/cut/soft 0.23334707626194934 3.44445 1.0
+run 0
+print "$(pe-v_zero:%.16g)" file optimization/insert_0.energy screen no

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /opt/homebrew/bin/mpiexec --mca btl self,sm -n 4 /opt/homebrew/bin/lmp_mpi "$@"

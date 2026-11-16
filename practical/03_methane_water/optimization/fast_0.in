@@ -1,0 +1,6 @@
+include in.common
+unfix myshk
+pair_coeff 1 3 lj/cut/soft 0.23334707626194934 3.44445 0
+run 0
+write_dump all custom optimization/fast_0.dump id type x y z fx fy fz modify sort id format float %.15g
+print "$(pe:%.16g)" file optimization/fast_0.energy screen no

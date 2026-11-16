@@ -1,0 +1,25 @@
+units real
+atom_style full
+bond_style harmonic
+angle_style charmm
+pair_style hybrid lj/cut/tip4p/long/opt 1 2 1 1 0.1546 14.0 9.0 lj/cut/soft 2.0 0.5 14.0
+kspace_style pppm/tip4p 1.0e-4
+read_data h2o_equil.data nocoeff
+pair_modify tail yes mix arithmetic
+pair_coeff 1 1 lj/cut/tip4p/long/opt 0.185207 3.1589 14.0
+pair_coeff 1 2 lj/cut/tip4p/long/opt 0.0 3.1589 9.0
+pair_coeff 2 2 lj/cut/tip4p/long/opt 0.0 3.1589 9.0
+pair_coeff 1 3 lj/cut/soft 0.2333487979600495 3.44445 1.0
+pair_coeff 2 3 lj/cut/soft 0.0 3.44445 1.0
+pair_coeff 3 3 lj/cut/soft 0.0 3.73 1.0
+bond_coeff 1 103.39 0.9572
+angle_coeff 1 0 104.52 0 0
+neighbor 1.0 bin
+neigh_modify delay 0 every 1 check yes one 10000 page 100000
+group H2O type 1 2
+fix myshk H2O shake 1.0e-5 200 0 b 1 a 1
+fix integ all nvt temp 300 300 100
+timestep 2.0
+thermo 1000
+thermo_style custom step temp pe press density
+run 1000

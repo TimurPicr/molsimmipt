@@ -1,0 +1,20 @@
+include in.common
+velocity all scale ${T}
+fix integ all npt temp ${T} ${T} 100 iso 1.0 1.0 1000
+run ${eq}
+
+variable Lx equal lx
+variable Ly equal ly
+variable Lz equal lz
+fix sizes all ave/time 10 10 100 v_Lx v_Ly v_Lz ave running file ${out}/sizes.out
+run ${eq}
+variable x equal f_sizes[1]
+variable y equal f_sizes[2]
+variable z equal f_sizes[3]
+change_box all x final 0 ${x} y final 0 ${y} z final 0 ${z} remap units box
+unfix sizes
+unfix integ
+
+fix integ all nvt temp ${T} ${T} 100
+run ${eq}
+write_data ${out}/equil.data

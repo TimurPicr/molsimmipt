@@ -1,0 +1,11 @@
+lambda=0: energy error=0; derivative error=4.88e-05; force relative RMS=0.000412
+lambda=0.2: energy error=-1.86e-12; derivative error=-1.21e-10; force relative RMS=0.000412
+lambda=0.5: energy error=-6.83e-13; derivative error=-1.23e-10; force relative RMS=0.000412
+lambda=1: energy error=1.06e-12; derivative error=-6.18e-05; force relative RMS=0.000412
+insertion 0: energy error=-1.31e-11 kcal/mol
+insertion 1: energy error=4.07e-10 kcal/mol
+insertion 2: energy error=3.25e-10 kcal/mol
+insertion 3: energy error=-3.97e-11 kcal/mol
+insertion 4: energy error=-1.9e-08 kcal/mol
+dt=1 fs: NVE energy drift=-0.04027 kcal/mol/ps
+dt=2 fs: NVE energy drift=-0.03833 kcal/mol/ps

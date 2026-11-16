@@ -1,0 +1,10 @@
+{
+  "eq": 100,
+  "steps": 1000,
+  "block": 100,
+  "h": 0.0001,
+  "insertions": 10,
+  "seed": 340509,
+  "test": true,
+  "lmp": "/opt/homebrew/bin/lmp_serial"
+}
